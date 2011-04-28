@@ -150,6 +150,38 @@ class JSON_API_Core_Controller {
     }
     return $this->posts_result($posts);
   }
+
+	public function get_tag_date_posts() 
+	{
+		global $json_api;
+		
+		$tag = $json_api->introspector->get_current_tag();
+		
+		if (!$tag) {
+			$json_api->error("Not found.");
+		}
+		
+		if ($json_api->query->date && $tag) {
+			$date = preg_replace('/\D/', '', $json_api->query->date);
+			$request = array(
+				'year' => substr($date, 0, 4),
+				'tag' => $tag->slug
+			);
+			
+			if (strlen($date) > 4) {
+				$request['monthnum'] = (int) substr($date, 4, 2);
+			}
+			if (strlen($date) > 6) {
+				$request['day'] = (int) substr($date, 6, 2);
+			}
+			
+		} else {
+			$request = array('tag' => $tag->slug);
+		}
+		
+		$posts = $json_api->introspector->get_posts($request);
+		return $this->posts_object_result($posts, $tag);
+	}
   
   public function get_category_posts() {
     global $json_api;
